@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="/src/output.css" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/js/app.js"></script>
+</head>
+
+<body class="bg-gray-300">
+  <header
+    class="fixed inset-x-0 top-0 z-30 mx-auto w-full max-w-screen-md border border-gray-100 bg-white/80 py-3 shadow backdrop-blur-lg md:top-6 md:rounded-3xl lg:max-w-screen-lg">
+    <div class="px-4">
+      <div class="flex items-center justify-between">
+        <div class="flex shrink-0">
+          <a aria-current="page" class="flex items-center" href="/">
+            <img class="h-7 w-auto" src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
+              alt="">
+            <p class="sr-only">Gestor de Usuarios</p>
+          </a>
+        </div>
+        <h1 class="text-xl font-bold text-gray-900">Gestor de Usuarios</h1>
+        <div class="flex gap-2">
+          <a href="/" class="text-sm text-gray-600 hover:text-gray-900">Inicio</a>
+          <button @click="cerrarSesion()" class="text-sm text-red-600 hover:text-red-900 font-medium">Cerrar Sesión</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="pt-32 pb-12" x-data="app()" x-init="cargarUsuarios()">
+    <div class="container mx-auto px-4 max-w-4xl">
+      <!-- Formulario para crear/editar usuario -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6" x-text="editandoId ? 'Editar Usuario' : 'Nuevo Usuario'"></h2>
+        
+        <form @submit.prevent="guardarUsuario()" class="space-y-4">
+          <!-- Foto de perfil -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Foto de Perfil</label>
+            <div class="flex gap-4 items-start">
+              <div class="flex-1">
+                <input type="file" @change="previewImagen($event)" accept="image/*"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <p class="text-xs text-gray-500 mt-1">JPG, PNG (máx 2MB)</p>
+              </div>
+              <div x-show="previewUrl" class="flex-shrink-0">
+                <img :src="previewUrl" alt="preview" class="w-20 h-20 rounded-lg object-cover border border-gray-300">
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+            <input type="text" x-model="formulario.nombre" placeholder="Nombre completo" required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input type="email" x-model="formulario.email" placeholder="email@ejemplo.com" required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Edad</label>
+            <input type="number" x-model="formulario.edad" placeholder="25"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          
+          <div class="flex gap-2">
+            <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 font-medium transition">
+              <span x-text="editandoId ? 'Actualizar' : 'Crear Usuario'"></span>
+            </button>
+            <button type="button" @click="resetearFormulario()" x-show="editandoId"
+              class="px-4 bg-gray-300 text-gray-900 py-2 rounded-md hover:bg-gray-400 font-medium transition">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de usuarios -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Usuarios (<span x-text="usuarios.length"></span>)</h2>
+
+        <div x-show="usuarios.length === 0" class="text-center py-8">
+          <p class="text-gray-500 text-lg">No hay usuarios. ¡Crea uno para empezar!</p>
+        </div>
+
+        <div x-show="usuarios.length > 0" class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Foto</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Nombre</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Email</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Edad</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="usuario in usuarios" :key="usuario.id">
+                <tr class="border-t hover:bg-gray-50">
+                  <td class="px-4 py-3 text-sm">
+                    <div x-show="usuario.foto" class="w-10 h-10 rounded-full overflow-hidden">
+                      <img :src="usuario.foto" :alt="usuario.nombre" class="w-full h-full object-cover">
+                    </div>
+                    <div x-show="!usuario.foto" class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-600">
+                      <span x-text="usuario.nombre.charAt(0).toUpperCase()"></span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-900" x-text="usuario.nombre"></td>
+                  <td class="px-4 py-3 text-sm text-gray-500" x-text="usuario.email"></td>
+                  <td class="px-4 py-3 text-sm text-gray-900" x-text="usuario.edad || '-'"></td>
+                  <td class="px-4 py-3 text-sm">
+                    <div class="flex gap-2">
+                      <button @click="editarUsuario(usuario)"
+                        class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-xs font-medium transition">
+                        Editar
+                      </button>
+                      <button @click="eliminarUsuario(usuario.id)"
+                        class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs font-medium transition">
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer></footer>
+
+  <script>
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('app', usuariosApp);
+    });
+  </script>
+</body>
+
+</html>

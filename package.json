@@ -1,0 +1,23 @@
+{
+	"type": "module",
+	"scripts": {
+		"serve": "http-server",
+		"build": "tailwindcss -i ./src/input.css -o ./src/output.css",
+		"dev": "tailwindcss -i ./src/input.css -o ./src/output.css --watch",
+		"server": "node server.js",
+		"start": "concurrently \"npm run server\" \"npm run serve\""
+	},
+	"dependencies": {
+		"@tailwindcss/cli": "^4.1.17",
+		"better-sqlite3": "^12.5.0",
+		"body-parser": "^1.20.2",
+		"cors": "^2.8.5",
+		"express": "^4.18.2",
+		"sqlite3": "^5.1.6",
+		"tailwindcss": "^4.1.17"
+	},
+	"devDependencies": {
+		"concurrently": "^8.2.1",
+		"http-server": "^14.1.1"
+	}
+}
